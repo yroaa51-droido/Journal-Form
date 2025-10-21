@@ -1,5 +1,4 @@
 <!doctype html>
-const scriptURL = "projects/1zR3XmJNoT5AuyBlo6xnB2tsi1xXMozS909dJLTDLLCYFuOCSDAfxBuHB";
 <html lang="ar">
 <head>
 <meta charset="utf-8">
@@ -27,22 +26,17 @@ const scriptURL = "projects/1zR3XmJNoT5AuyBlo6xnB2tsi1xXMozS909dJLTDLLCYFuOCSDAf
       <input type="text" name="name" required>
     </label>
 
-    <label>It’s your first time to work in group to make a project. Illustrate two things you will do to be sure your group will be effective, showing the benefit of each of them. 
-:
+    <label>It’s your first time to work in group to make a project. Illustrate two things you will do to be sure your group will be effective, showing the benefit of each of them:
       <textarea name="q1" rows="4" required></textarea>
       <div class="counter" id="count1">0 / 250 كلمة</div>
     </label>
 
-    <label>In Egypt’s STEM education system, the engineering design process (EDP) is a thinking process used to learn and apply concepts and skills in an integrated manner. The first step of the EDP is defining the problem. Identify two reasons that make defining the right problem to solve important to the success of and project.
-Alternative: “Explain how a poorly defined problem could negatively impact two later steps in the engineering design process." *
-Using the Engineering Design Process (EDP
-:
+    <label>In Egypt’s STEM education system, the engineering design process (EDP) is a thinking process used to learn and apply concepts and skills in an integrated manner. The first step of the EDP is defining the problem. Identify two reasons that make defining the right problem to solve important to the success of any project. Alternative: “Explain how a poorly defined problem could negatively impact two later steps in the engineering design process.”:
       <textarea name="q2" rows="4" required></textarea>
       <div class="counter" id="count2">0 / 250 كلمة</div>
     </label>
 
-    <label>(Lo 1.01) You have studied SketchUp program. Select two most important tools in your opinion and explain how you can benefit from them in your Capstone project. *
-Learning Transfer:
+    <label>(Lo 1.01) You have studied SketchUp program. Select two most important tools in your opinion and explain how you can benefit from them in your Capstone project:
       <textarea name="q3" rows="4" required></textarea>
       <div class="counter" id="count3">0 / 250 كلمة</div>
     </label>
@@ -51,53 +45,56 @@ Learning Transfer:
   </form>
 
 <script>
-// 🔗 ضع هنا رابط Google Apps Script بتاعك
+// 🔗 هنا تحط رابط Google Apps Script لما تنشره كـ Web App
 const scriptURL = "PASTE_YOUR_SCRIPT_LINK_HERE";
 
-// 🕒 عدّاد الساعة
-let endTime = Date.now() + 60 * 60 * 1000;
+// 🕒 عدّاد تنازلي لمدة ساعة
+let totalSeconds = 60 * 60; // 60 دقيقة
 let timerEl = document.getElementById("timer");
 let form = document.getElementById("examForm");
 
-function updateTimer(){
-  let remain = Math.max(0, Math.floor((endTime - Date.now())/1000));
-  let mm = String(Math.floor(remain/60)).padStart(2,"0");
-  let ss = String(remain%60).padStart(2,"0");
-  timerEl.textContent = الوقت المتبقي: ${mm}:${ss};
-  if(remain<=0){
-    form.querySelectorAll("input,textarea,button").forEach(e=>e.disabled=true);
+function updateTimer() {
+  if (totalSeconds <= 0) {
+    clearInterval(countdown);
+    form.querySelectorAll("input,textarea,button").forEach(e => e.disabled = true);
     timerEl.textContent = "⏰ انتهى الوقت — تم غلق النموذج";
-    clearInterval(interval);
+    return;
   }
+  totalSeconds--;
+  let mm = String(Math.floor(totalSeconds / 60)).padStart(2, "0");
+  let ss = String(totalSeconds % 60).padStart(2, "0");
+  timerEl.textContent = الوقت المتبقي: ${mm}:${ss};
 }
-let interval = setInterval(updateTimer, 1000);
 
-// ✍ عدّاد الكلمات لكل سؤال
-function countWords(text){
-  // نحسب عدد الكلمات (تفصلها مسافة)
-  let words = text.trim().split(/\s+/).filter(w => w.length > 0);
-  return words.length;
+let countdown = setInterval(updateTimer, 1000);
+updateTimer(); // لتحديث فوري عند التشغيل
+
+// ✍ عدّاد الكلمات
+function countWords(text) {
+  return text.trim().split(/\s+/).filter(w => w.length > 0).length;
 }
-function setupCounter(textarea, counterId){
+
+function setupCounter(textarea, counterId) {
   let counter = document.getElementById(counterId);
-  textarea.addEventListener('input', ()=>{
+  textarea.addEventListener('input', () => {
     let words = countWords(textarea.value);
     counter.textContent = ${words} / 250 كلمة;
-    if(words > 250){
+    if (words > 250) {
       counter.classList.add('limit');
-      textarea.value = textarea.value.trim().split(/\s+/).slice(0,250).join(" ");
+      textarea.value = textarea.value.trim().split(/\s+/).slice(0, 250).join(" ");
       alert("❌ وصلت للحد الأقصى 250 كلمة!");
     } else {
       counter.classList.remove('limit');
     }
   });
 }
+
 setupCounter(form.q1, "count1");
 setupCounter(form.q2, "count2");
 setupCounter(form.q3, "count3");
 
 // 🚀 إرسال البيانات إلى Google Sheet
-form.addEventListener("submit", e=>{
+form.addEventListener("submit", e => {
   e.preventDefault();
   const data = {
     name: form.name.value,
@@ -109,15 +106,15 @@ form.addEventListener("submit", e=>{
     method: "POST",
     body: JSON.stringify(data)
   })
-  .then(res=>res.text())
-  .then(msg=>{
-    alert(msg);
+  .then(res => res.text())
+  .then(msg => {
+    alert("✅ تم إرسال الإجابات بنجاح!");
     form.reset();
     document.getElementById("count1").textContent = "0 / 250 كلمة";
     document.getElementById("count2").textContent = "0 / 250 كلمة";
     document.getElementById("count3").textContent = "0 / 250 كلمة";
   })
-  .catch(err=>{
+  .catch(err => {
     alert("حدث خطأ أثناء الإرسال ❌");
     console.error(err);
   });
